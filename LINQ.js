@@ -283,30 +283,3 @@ String.prototype.startsWith = function(string = "", ignoreCase = false) {
     }
     return false;
 }
-
-
-
-
-
-
-let test = [2, 12, 6];
-let obj = {
-    t: {
-        a: 1,
-        b: 3
-    },
-    s: {
-        a: 1,
-        b: 3,
-    },
-    d: {
-        a: 5,
-        b: 1,
-    }
-}
-// let filter = test.avarage();
-// let objFilter = obj.where(i => i.startsWith("a")).orderby(i => i).reverse();
-console.log(obj.distinct());
-
-// console.log(filter);
-// console.log(objFilter);
