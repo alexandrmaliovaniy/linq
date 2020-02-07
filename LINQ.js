@@ -16,6 +16,14 @@ Object.prototype.select = function(cb) {
     }
     return res;
 }
+Object.prototype.convertToArray = function() {
+    let res = [];
+    let keys = this.getKeys();
+    for (let i = 0; i < keys.length; i++) {
+            res.push(this[keys[i]]);
+    }
+    return res;
+}
 Object.prototype.compare = function(target) {
     if (typeof target == "object") {
         let thisKeys = this.getKeys();
@@ -38,15 +46,21 @@ Object.prototype.compare = function(target) {
     }
     return false;
 }
+Object.prototype.forEach = function(cb) {
+    let keys = this.getKeys();
+    for (let i = 0; i < keys.length; i++) {
+        cb(keys[i]);
+    }
+}
 Object.prototype.getKeys = function() {
     return Object.keys(this);
 }
 Object.prototype.copy = function() {
+
     let copy = new Object();
-    let keys = this.getKeys();
-    for (let i = 0; i < keys.length; i++) {
-        copy[keys[i]] = this[keys[i]];
-    }
+    this.forEach(i => {
+        copy[i] = this[i];
+    });
     return copy;
 }
 Object.prototype.orderby = function(cb) {
@@ -107,6 +121,15 @@ Object.prototype.count = function(cb) {
     }
     return res;
 }
+Object.prototype.contains = function(el) {
+    let keys = this.getKeys();
+    for (let i = 0; i < keys.length; i++) {
+        if (this[keys[i]] == el) {
+            return true;
+        }
+    }
+    return false;
+}
 Object.prototype.distinct = function() {
     let keys = this.getKeys();
     let res = new Object();
@@ -126,7 +149,6 @@ Object.prototype.distinct = function() {
     }
     return res;
 }
-
 Array.prototype.where = function(cb) {
     let res = [];
     for (let i = 0; i < this.length; i++) {
@@ -147,20 +169,28 @@ Array.prototype.compare = function(arr) {
     }
     return false;
 }
-Array.prototype.orderby = function() {
+Array.prototype.copy = function() {
+    let res = [];
+    for (let i = 0; i < this.length; i++) {
+        res.push(this[i]);
+    }
+    return res;
+}
+Array.prototype.orderby = function(cb) {
+    let res = this.copy();
     while(true) {
         let err = false;
-        for (let i = 0; i < this.length - 1; i++) {
-            if (this[i] > this[i+1]) {
-                let tmp = this[i];
-                this[i] = this[i+1];
-                this[i+1] = tmp;
+        for (let i = 0; i < res.length - 1; i++) {
+            if (cb(res[i]) > cb(res[i+1])) {
+                let tmp = res[i];
+                res[i] = res[i+1];
+                res[i+1] = tmp;
                 err = true;
             }
         }
         if (!err) break;
     }
-    return
+    return res;
 }
 Array.prototype.distinct = function() {
     let res = [this[0]];
@@ -209,7 +239,10 @@ Array.prototype.contains = function(compare) {
     }
     return false;
 }
-Array.prototype.Intersect = function(collection) {
+Array.prototype.intersect = function(collection) {
+    if (this.length == 0 || collection.length == 0) {
+        return [];
+    }
     let res = [];
     for (let i = 0; i < this.length; i++) {
         for (let j = 0; j < collection.length; j++) {
@@ -271,6 +304,33 @@ Array.prototype.skipWhile = function(cb) {
     }
     return res;
 }
+Array.prototype.max = function() {
+    let max = this[0];
+    for (let i = 1; i < this.length; i++) {
+        if (this[i] > max) {
+            max = this[i];
+        }
+    }
+    return max;
+}
+Array.prototype.min = function() {
+    let min = this[0];
+    for (let i = 1; i < this.length; i++) {
+        if (this[i] < min) {
+            min = this[i];
+        }
+    }
+    return min;
+}
+Array.prototype.deleteElements = function() {
+    let res = [];
+    for (let i = 0; i < this.length; i++) {
+        if (!arguments.contains(this[i])) {
+            res.push(this[i]);
+        }
+    }
+    return res;
+}
 String.prototype.startsWith = function(string = "", ignoreCase = false) {
     if (ignoreCase) {
         if (this.toString().toLowerCase().indexOf(string.toLowerCase()) == 0) {
@@ -282,4 +342,29 @@ String.prototype.startsWith = function(string = "", ignoreCase = false) {
         }
     }
     return false;
+}
+String.prototype.identity = function(example) {
+    if (this.length == 0 || example.length == 0) {
+        return 0;
+    }
+    if (example.length <= this.length) {
+        let pers = [];
+        for(let i = 0; i < this.length - example.length; i++) {
+            let ident = 0;
+            for (let j = 0; j < example.length; j++) {
+                if (this[i + j] == example[j]) {
+                    ident++;
+                } else {
+                    break;
+                }
+            }
+            pers.push(ident / example.length);
+        }
+        return pers.max();
+    } else {
+        return example.identity(this);
+    }
+}
+String.prototype.arrange = function(e) {
+    return this.split(e).deleteElements("");
 }
